@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import NavItems from "./NavItems";
 
 const Header = () => {
   return (
@@ -14,6 +15,10 @@ const Header = () => {
             className="h-8 w-auto cursor-pointer"
           />
         </Link>
+        <nav className="hidden sm:block">
+          <NavItems/>
+        </nav>
+
       </div>
     </header>
   );
