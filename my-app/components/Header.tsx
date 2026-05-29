@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import NavItems from "./NavItems";
+import UserDropDown from "./UserDropDown";
 
 const Header = () => {
   return (
@@ -16,9 +17,9 @@ const Header = () => {
           />
         </Link>
         <nav className="hidden sm:block">
-          <NavItems/>
+          <NavItems />
         </nav>
-
+        <UserDropDown  />
       </div>
     </header>
   );
