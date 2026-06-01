@@ -103,7 +103,7 @@ const SignUp = () => {
           required
         />
 
-        <SelectField jladsjflk
+        <SelectField
           name="riskTolerance"
           label="Risk Tolerance"
           placeholder="Select your risk level"
