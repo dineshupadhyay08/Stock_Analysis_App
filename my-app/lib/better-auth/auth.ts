@@ -10,7 +10,7 @@ let authInstance: ReturnType<typeof betterAuth> | null = null;
 export const getAuth = async () => {
   if (authInstance) return authInstance;
 
-  
+  const db = mongoose.connection.db;
 
   if (!db) throw new Error("MongoDB connection not found");
 
