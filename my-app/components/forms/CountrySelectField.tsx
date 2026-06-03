@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Control, Controller, FieldError } from 'react-hook-form';
+import { Control, Controller, FieldError, FieldValues } from 'react-hook-form';
 import {
     Popover,
     PopoverContent,
@@ -23,11 +23,11 @@ import { cn } from '@/lib/utils';
 import countryList from 'react-select-country-list';
 
 type CountrySelectProps = {
-    name: string;
-    label: string;
-    control: Control<any>;
-    error?: FieldError;
-    required?: boolean;
+  name: string;
+  label: string;
+  control: Control<FieldValues>;
+  error?: FieldError;
+  required?: boolean;
 };
 
 const CountrySelect = ({
