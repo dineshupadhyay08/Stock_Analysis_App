@@ -52,7 +52,7 @@ const SignUp = () => {
     <>
       <h1 className="form-title">Sign Up & Personalize</h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
         <InputField
           name="fullName"
           label="Full Name"
