@@ -9,16 +9,27 @@ import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
 import { getNews } from "@/lib/actions/finnhub.actions";
 import { getFormattedTodayDate } from "@/lib/utils";
 
+type UserForNewsEmail = {
+  id: string;
+  email: string;
+  name: string;
+  country?: string;
+};
+
+// Minimal type to satisfy TS compilation where the code stringifies AI input.
+// Keep it permissive because the exact structure comes from finnhub action.
+type MarketNewsArticle = Record<string, unknown>;
+
 export const sendSignUpEmail = inngest.createFunction(
   { id: "sign-up-email" },
-  { event: "app/user.created" },
-  async ({ event, step }) => {
+  [{ event: "app/user.created" }],
+async ({ event, step }) => {
     const userProfile = `
-            - Country: ${event.data.country}
-            - Investment goals: ${event.data.investmentGoals}
-            - Risk tolerance: ${event.data.riskTolerance}
-            - Preferred industry: ${event.data.preferredIndustry}
-        `;
+      - Country: ${event.data.country}
+      - Investment goals: ${event.data.investmentGoals}
+      - Risk tolerance: ${event.data.riskTolerance}
+      - Preferred industry: ${event.data.preferredIndustry}
+    `;
 
     const prompt = PERSONALIZED_WELCOME_EMAIL_PROMPT.replace(
       "{{userProfile}}",
@@ -26,7 +37,9 @@ export const sendSignUpEmail = inngest.createFunction(
     );
 
     const response = await step.ai.infer("generate-welcome-intro", {
-      model: step.ai.models.gemini({ model: "gemini-2.5-flash-lite" }),
+      model: step.ai.models.gemini({
+        model: "gemini-2.5-flash-lite",
+      }),
       body: {
         contents: [
           {
@@ -39,6 +52,7 @@ export const sendSignUpEmail = inngest.createFunction(
 
     await step.run("send-welcome-email", async () => {
       const part = response.candidates?.[0]?.content?.parts?.[0];
+
       const introText =
         (part && "text" in part ? part.text : null) ||
         "Thanks for joining Signalist. You now have the tools to track markets and make smarter moves.";
@@ -47,7 +61,11 @@ export const sendSignUpEmail = inngest.createFunction(
         data: { email, name },
       } = event;
 
-      return await sendWelcomeEmail({ email, name, intro: introText });
+      return await sendWelcomeEmail({
+        email,
+        name,
+        intro: introText,
+      });
     });
 
     return {
