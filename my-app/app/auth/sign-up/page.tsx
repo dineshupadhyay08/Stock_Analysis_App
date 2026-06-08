@@ -53,6 +53,7 @@ const SignUp = () => {
       <h1 className="form-title">Sign Up & Personalize</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+
         <InputField
           name="fullName"
           label="Full Name"
@@ -126,7 +127,8 @@ const SignUp = () => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="yellow-btn w-full mt-5"
+          className="yellow-btn w-full mt-3"
+
         >
           {isSubmitting ? "Creating Account" : "Start Your Investing Journey"}
         </Button>

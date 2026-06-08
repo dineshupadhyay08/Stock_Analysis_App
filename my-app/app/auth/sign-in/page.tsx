@@ -39,7 +39,8 @@ const SignIn = () => {
     <>
       <h1 className="form-title">Welcome back</h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+
         <InputField
           name="email"
           label="Email"
@@ -65,7 +66,8 @@ const SignIn = () => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="yellow-btn w-full mt-5"
+          className="yellow-btn w-full mt-3"
+
         >
           {isSubmitting ? "Signing In" : "Sign In"}
         </Button>
@@ -73,7 +75,7 @@ const SignIn = () => {
         <FooterLink
           text="Don't have an account?"
           linkText="Create an account"
-          href="/sign-up"
+          href="/auth/sign-up"
         />
       </form>
     </>

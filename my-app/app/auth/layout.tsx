@@ -51,15 +51,17 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
 
-        <div className="flex-1 relative">
+        <div className="flex-1 relative overflow-hidden">
           <Image
             src="/assets/images/dashboard.png"
             alt="Dashboard Preview"
             width={750}
             height={850}
-            className="auth-dashboard-preview absolute -top-10"
+            priority
+            className="auth-dashboard-preview"
           />
         </div>
+
       </section>
     </main>
   );
