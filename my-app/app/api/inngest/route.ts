@@ -1,8 +1,14 @@
 import { serve } from "inngest/next";
 import { inngest } from "@/lib/inngests/client";
-import { sendDailyNewsSummary, sendSignUpEmail } from "@/lib/inngests/function";
+import { sendSignUpEmail } from "@/lib/inngests/function";
 
-export const { GET, POST, PUT } = serve({
+console.log("SIGNUP FUNCTION:", sendSignUpEmail);
+
+const handler = serve({
   client: inngest,
-  functions: [sendSignUpEmail, sendDailyNewsSummary],
+  functions: [sendSignUpEmail],
 });
+
+export const GET = handler.GET;
+export const POST = handler.POST;
+export const PUT = handler.PUT;

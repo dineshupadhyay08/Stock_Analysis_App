@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import NavItems from "@/components/NavItems";
+import { signOut } from "@/lib/actions/auth.actions";
 
 type User = {
   name: string;
@@ -40,8 +41,10 @@ const UserDropDown = ({
 }: UserDropdownProps) => {
   const router = useRouter();
 
-  const handleSignOut = () => {
-    router.push("/sign-in");
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/auth/sign-in");
+    router.refresh();
   };
 
   return (
@@ -70,7 +73,10 @@ const UserDropDown = ({
         <DropdownMenuLabel>
           <div className="flex items-center gap-3 py-2">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="https://avatars.githubusercontent.com/u/153423955?s=280&v=4" />
+              {/* <AvatarImage src="https://avatars.githubusercontent.com/u/153423955?s=280&v=4" /> */}
+              <AvatarImage
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=f59e0b&color=fff&bold=true`}
+              />
               <AvatarFallback className="bg-yellow-500 text-yellow-900 text-sm font-bold">
                 {user.name[0]}
               </AvatarFallback>

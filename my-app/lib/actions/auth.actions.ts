@@ -19,19 +19,24 @@ export const signUpWithEmail = async ({
       body: { email, password, name: fullName },
     });
 
-    if (response) {
-      await inngest.send({
-        name: "app/user.created",
-        data: {
-          email,
-          name: fullName,
-          country,
-          investmentGoals,
-          riskTolerance,
-          preferredIndustry,
-        },
-      });
-    }
+   if (response) {
+     console.log("🔥 BEFORE INNGEST SEND");
+
+     const result = await inngest.send({
+       name: "app/user.created",
+       data: {
+         email,
+         name: fullName,
+         country,
+         investmentGoals,
+         riskTolerance,
+         preferredIndustry,
+       },
+     });
+
+     console.log("✅ INNGEST RESULT:", result);
+     console.log("🔥 AFTER INNGEST SEND");
+   }
 
     return { success: true, data: response };
   } catch (e) {

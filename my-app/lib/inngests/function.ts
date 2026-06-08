@@ -20,64 +20,155 @@ type UserForNewsEmail = {
 // Keep it permissive because the exact structure comes from finnhub action.
 type MarketNewsArticle = Record<string, unknown>;
 
+// export const sendSignUpEmail = inngest.createFunction(
+//   { id: "sign-up-email" },
+//   [{ event: "app/user.created" }],
+// async ({ event, step }) => {
+//     const userProfile = `
+//       - Country: ${event.data.country}
+//       - Investment goals: ${event.data.investmentGoals}
+//       - Risk tolerance: ${event.data.riskTolerance}
+//       - Preferred industry: ${event.data.preferredIndustry}
+//     `;
+
+//     const prompt = PERSONALIZED_WELCOME_EMAIL_PROMPT.replace(
+//       "{{userProfile}}",
+//       userProfile,
+//     );
+
+//     const response = await step.ai.infer("generate-welcome-intro", {
+//       model: step.ai.models.gemini({
+//         model: "gemini-2.5-flash-lite",
+//       }),
+//       body: {
+//         contents: [
+//           {
+//             role: "user",
+//             parts: [{ text: prompt }],
+//           },
+//         ],
+//       },
+//     });
+
+//     await step.run("send-welcome-email", async () => {
+//       const part = response.candidates?.[0]?.content?.parts?.[0];
+
+//       const introText =
+//         (part && "text" in part ? part.text : null) ||
+//         "Thanks for joining Signalist. You now have the tools to track markets and make smarter moves.";
+
+//       const {
+//         data: { email, name },
+//       } = event;
+
+//       return await sendWelcomeEmail({
+//         email,
+//         name,
+//         intro: introText,
+//       });
+//     });
+
+//     return {
+//       success: true,
+//       message: "Welcome email sent successfully",
+//     };
+//   },
+// );
+
 export const sendSignUpEmail = inngest.createFunction(
-  { id: "sign-up-email" },
-  [{ event: "app/user.created" }],
-async ({ event, step }) => {
-    const userProfile = `
-      - Country: ${event.data.country}
-      - Investment goals: ${event.data.investmentGoals}
-      - Risk tolerance: ${event.data.riskTolerance}
-      - Preferred industry: ${event.data.preferredIndustry}
-    `;
+  {
+    id: "sign-up-email",
+    triggers: [{ event: "app/user.created" }],
+  },
+  async ({ event, step }) => {
+    try {
+      console.log("🚀 SIGNUP EMAIL FUNCTION TRIGGERED");
+      console.log("📩 Event Data:", event.data);
 
-    const prompt = PERSONALIZED_WELCOME_EMAIL_PROMPT.replace(
-      "{{userProfile}}",
-      userProfile,
-    );
+      const userProfile = `
+        - Country: ${event.data.country}
+        - Investment goals: ${event.data.investmentGoals}
+        - Risk tolerance: ${event.data.riskTolerance}
+        - Preferred industry: ${event.data.preferredIndustry}
+      `;
 
-    const response = await step.ai.infer("generate-welcome-intro", {
-      model: step.ai.models.gemini({
-        model: "gemini-2.5-flash-lite",
-      }),
-      body: {
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: prompt }],
-          },
-        ],
-      },
-    });
+      const prompt = PERSONALIZED_WELCOME_EMAIL_PROMPT.replace(
+        "{{userProfile}}",
+        userProfile,
+      );
 
-    await step.run("send-welcome-email", async () => {
-      const part = response.candidates?.[0]?.content?.parts?.[0];
+      console.log("🤖 Calling Gemini AI...");
 
-      const introText =
-        (part && "text" in part ? part.text : null) ||
-        "Thanks for joining Signalist. You now have the tools to track markets and make smarter moves.";
-
-      const {
-        data: { email, name },
-      } = event;
-
-      return await sendWelcomeEmail({
-        email,
-        name,
-        intro: introText,
+      const response = await step.ai.infer("generate-welcome-intro", {
+        model: step.ai.models.gemini({
+          model: "gemini-2.5-flash-lite",
+        }),
+        body: {
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: prompt }],
+            },
+          ],
+        },
       });
-    });
 
-    return {
-      success: true,
-      message: "Welcome email sent successfully",
-    };
+      console.log("✅ Gemini Response Received");
+
+      await step.run("send-welcome-email", async () => {
+        try {
+          const part = response.candidates?.[0]?.content?.parts?.[0];
+
+          const introText =
+            (part && "text" in part ? part.text : null) ||
+            "Thanks for joining Signalist. You now have the tools to track markets and make smarter moves.";
+
+          const {
+            data: { email, name },
+          } = event;
+
+          console.log("📧 Sending Welcome Email To:", email);
+          console.log("👤 User Name:", name);
+
+          const result = await sendWelcomeEmail({
+            email,
+            name,
+            intro: introText,
+          });
+
+          console.log("✅ EMAIL SENT SUCCESSFULLY");
+          console.log("📨 Result:", result);
+
+          return result;
+        } catch (emailError) {
+          console.error("❌ EMAIL SEND ERROR:", emailError);
+          throw emailError;
+        }
+      });
+
+      console.log("🎉 SIGNUP EMAIL WORKFLOW COMPLETED");
+
+      return {
+        success: true,
+        message: "Welcome email sent successfully",
+      };
+    } catch (error) {
+      console.error("❌ SIGNUP EMAIL FUNCTION FAILED:", error);
+
+      return {
+        success: false,
+        message: "Failed to send welcome email",
+        error,
+      };
+    }
   },
 );
 
 export const sendDailyNewsSummary = inngest.createFunction(
-  { id: "daily-news-summary" },
-  [{ event: "app/send.daily.news" }, { cron: "0 12 * * *" }],
+  {
+    id: "daily-news-summary",
+    triggers: [{ event: "app/send.daily.news" }, { cron: "0 12 * * *" }],
+  },
   async ({ step }) => {
     // Step #1: Get all users for news delivery
     const users = await step.run("get-all-users", getAllUsersForNewsEmail);
