@@ -5,8 +5,10 @@ import UserDropDown from "./UserDropDown";
 
 import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
+import { searchStocks } from "@/lib/actions/finnhub.actions";
 
 const Header = async () => {
+   const initialStocks = await searchStocks();
   const auth = await getAuth();
 
   const session = await auth.api.getSession({
@@ -27,7 +29,7 @@ const Header = async () => {
         </Link>
 
         <nav className="hidden sm:block">
-          <NavItems />
+          <NavItems initialStocks={initialStocks} />
         </nav>
 
         {session?.user ? (
@@ -38,7 +40,10 @@ const Header = async () => {
             }}
           />
         ) : (
-          <Link href="/auth/sign-in" className="text-gray-400 hover:text-yellow-500">
+          <Link
+            href="/auth/sign-in"
+            className="text-gray-400 hover:text-yellow-500"
+          >
             Sign in
           </Link>
         )}
