@@ -21,11 +21,11 @@ type User = {
   email: string;
 };
 
-type StockWithWatchlistStatus = {
-  id?: string;
-  symbol?: string;
-  isWatchlisted?: boolean;
-};
+// type StockWithWatchlistStatus = {
+//   id?: string;
+//   symbol?: string;
+//   isWatchlisted?: boolean;
+// };
 
 type UserDropdownProps = {
   user?: User;
