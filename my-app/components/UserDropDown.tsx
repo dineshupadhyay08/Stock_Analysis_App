@@ -42,9 +42,33 @@ const UserDropDown = ({
   const router = useRouter();
 
   const handleSignOut = async () => {
+    // Hard purge of client-side auth-related storage first.
+    try {
+      localStorage.clear();
+    } catch {}
+    try {
+      sessionStorage.clear();
+    } catch {}
+
+    // Best-effort cookie purge (covers most auth cookie setups).
+    try {
+      const cookieNames = [
+        "better-auth",
+        "better-auth-session",
+        "session",
+        "token",
+        "auth",
+      ];
+
+      for (const name of cookieNames) {
+        document.cookie = `${name}=; Max-Age=0; path=/;`;
+      }
+    } catch {}
+
     await signOut();
-    router.push("/auth/sign-in");
-    router.refresh();
+
+    // One last hard redirect to guarantee no stale UI remains.
+    window.location.href = "/auth/sign-in";
   };
 
   return (
