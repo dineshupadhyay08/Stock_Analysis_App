@@ -30,12 +30,18 @@ const Header = async () => {
           <NavItems />
         </nav>
 
-        <UserDropDown
-          user={{
-            name: session?.user?.name ?? "Guest User",
-            email: session?.user?.email ?? "guest@example.com",
-          }}
-        />
+        {session?.user ? (
+          <UserDropDown
+            user={{
+              name: session.user.name,
+              email: session.user.email,
+            }}
+          />
+        ) : (
+          <Link href="/auth/sign-in" className="text-gray-400 hover:text-yellow-500">
+            Sign in
+          </Link>
+        )}
       </div>
     </header>
   );
