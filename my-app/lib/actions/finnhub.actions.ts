@@ -8,6 +8,20 @@ const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 const NEXT_PUBLIC_FINNHUB_API_KEY =
   process.env.NEXT_PUBLIC_FINNHUB_API_KEY ?? "";
 
+type StockWithWatchlistStatus = {
+    symbol: string;
+    name: string;
+    exchange: string;
+    type: string;
+    isInWatchlist: boolean;
+  };
+
+type FinnhubProfile = {
+    name?: string;
+    ticker?: string;
+    exchange?: string;
+  };
+
 async function fetchJSON<T>(
   url: string,
   revalidateSeconds?: number,
@@ -132,11 +146,23 @@ export const searchStocks = cache(
             try {
               const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(sym)}&token=${token}`;
               // Revalidate every hour
-              const profile = await fetchJSON<any>(url, 3600);
-              return { sym, profile } as { sym: string; profile: any };
+              const profile = await fetchJSON<FinnhubProfile>(url, 3600);
+              return {
+  sym,
+  profile,
+} as {
+  sym: string;
+  profile: FinnhubProfile | null;
+};
             } catch (e) {
               console.error("Error fetching profile2 for", sym, e);
-              return { sym, profile: null } as { sym: string; profile: any };
+              return {
+  sym,
+  profile: null,
+} as {
+  sym: string;
+  profile: FinnhubProfile | null;
+};
             }
           }),
         );
