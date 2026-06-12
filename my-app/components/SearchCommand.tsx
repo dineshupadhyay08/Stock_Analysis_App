@@ -13,6 +13,22 @@ import Link from "next/link";
 import { searchStocks } from "@/lib/actions/finnhub.actions";
 import { useDebounce } from "@/hooks/useDebounce";
 
+
+type StockWithWatchlistStatus = {
+  symbol: string;
+  name: string;
+  exchange?: string;
+  type?: string;
+  isWatchlisted?: boolean;
+};
+
+interface SearchCommandProps {
+  renderAs?: "button" | "text";
+  label?: string;
+  initialStocks: StockWithWatchlistStatus[];
+}
+
+
 export default function SearchCommand({
   renderAs = "button",
   label = "Add stock",
