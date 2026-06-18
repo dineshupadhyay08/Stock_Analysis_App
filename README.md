@@ -6,6 +6,11 @@ Designed for investors and traders who want real-time market insights, stock res
 
 ---
 
+🌐 Live Preview
+
+![Signalist Dashboard](https://raw.githubusercontent.com/dineshupadhyay08/Stock_Analysis_App/main/public/assets/images/dashboard.png)
+
+
 ## 🌐 Live Demo
 
 https://stock-analysis-app-ten.vercel.app/
