@@ -4,17 +4,26 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/forms/inputField";
 import FooterLink from "@/components/forms/FooterLink";
-import { signInWithEmail, signUpWithEmail } from "@/lib/actions/auth.actions";
+import { signInWithEmail } from "@/lib/actions/auth.actions";
 import { toast } from "sonner";
-import { signInEmail } from "better-auth/api";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useState } from "react";
+import { Loader2, ArrowRight } from "lucide-react";
+
+interface SignInFormData {
+  email: string;
+  password: string;
+}
 
 const SignIn = () => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignInFormData>({
     defaultValues: {
       email: "",
@@ -24,32 +33,54 @@ const SignIn = () => {
   });
 
   const onSubmit = async (data: SignInFormData) => {
+    setIsLoading(true);
     try {
       const result = await signInWithEmail(data);
-      if (result.success) router.push("/");
+      if (result.success) {
+        toast.success("Welcome back!", {
+          description: "Redirecting to your dashboard...",
+        });
+        router.push("/dashboard");
+      } else {
+        toast.error("Sign in failed", {
+          description: result.error || "Invalid email or password.",
+        });
+      }
     } catch (e) {
       console.error(e);
       toast.error("Sign in failed", {
         description: e instanceof Error ? e.message : "Failed to sign in.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <h1 className="form-title">Welcome back</h1>
+    <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+      <div className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+          Welcome back
+        </h1>
+        <p className="text-muted-foreground">
+          Sign in to your Signalist account to continue your financial journey.
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <InputField
           name="email"
           label="Email"
-          placeholder="contact@jsmastery.com"
+          placeholder="you@example.com"
+          type="email"
           register={register}
           error={errors.email}
           validation={{
             required: "Email is required",
-            pattern: /^\w+@\w+\.\w+$/,
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+              message: "Invalid email address",
+            },
           }}
         />
 
@@ -60,16 +91,31 @@ const SignIn = () => {
           type="password"
           register={register}
           error={errors.password}
-          validation={{ required: "Password is required", minLength: 8 }}
+          validation={{
+            required: "Password is required",
+            minLength: {
+              value: 8,
+              message: "Password must be at least 8 characters",
+            },
+          }}
         />
 
         <Button
           type="submit"
-          disabled={isSubmitting}
-          className="yellow-btn w-full mt-3"
-
+          disabled={isLoading}
+          className="w-full h-11 bg-gradient-to-b from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-gray-950 font-semibold rounded-lg shadow-lg shadow-yellow-500/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
         >
-          {isSubmitting ? "Signing In" : "Sign In"}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Signing In...
+            </>
+          ) : (
+            <>
+              Sign In
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </>
+          )}
         </Button>
 
         <FooterLink
@@ -77,8 +123,18 @@ const SignIn = () => {
           linkText="Create an account"
           href="/auth/sign-up"
         />
+
+        <div className="text-center pt-2">
+          <Link
+            href="/auth/forgot-password"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
+          >
+            Forgot your password?
+          </Link>
+        </div>
       </form>
-    </>
+    </div>
   );
 };
+
 export default SignIn;
