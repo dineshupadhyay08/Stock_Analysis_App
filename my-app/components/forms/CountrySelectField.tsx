@@ -63,33 +63,35 @@ const CountrySelect = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="country-select-trigger"
+          className="h-10 px-3 py-2 text-sm md:text-base w-full justify-between font-normal bg-background border border-input rounded-lg focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
           {value ? (
             <span className="flex items-center gap-2">
               <span>{getFlagEmoji(value)}</span>
-              <span>{countries.find((c) => c.value === value)?.label}</span>
+              <span className="text-foreground">
+                {countries.find((c) => c.value === value)?.label}
+              </span>
             </span>
           ) : (
-            "Select your country..."
+            <span className="text-muted-foreground">Select your country...</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-full p-0 bg-gray-800 border-gray-600"
+        className="w-full p-0 bg-popover border-border"
         align="start"
       >
-        <Command className="bg-gray-800 border-gray-600">
+        <Command className="bg-popover border-border">
           <CommandInput
             placeholder="Search countries..."
-            className="country-select-input"
+            className="bg-popover text-foreground border-0 border-b border-border rounded-none focus:ring-0 placeholder:text-muted-foreground"
           />
-          <CommandEmpty className="country-select-empty">
+          <CommandEmpty className="text-muted-foreground py-6 text-center bg-popover">
             No country found.
           </CommandEmpty>
-          <CommandList className="max-h-60 bg-gray-800 scrollbar-hide-default">
-            <CommandGroup className="bg-gray-800">
+          <CommandList className="max-h-60 bg-popover scrollbar-hide-default">
+            <CommandGroup className="bg-popover">
               {countries.map((country) => (
                 <CommandItem
                   key={country.value}
@@ -98,11 +100,11 @@ const CountrySelect = ({
                     onChange(country.value);
                     setOpen(false);
                   }}
-                  className="country-select-item"
+                  className="text-foreground cursor-pointer px-3 py-2 rounded-sm bg-popover hover:bg-accent"
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4 text-yellow-500",
+                      "mr-2 h-4 w-4 text-primary",
                       value === country.value ? "opacity-100" : "opacity-0",
                     )}
                   />
@@ -129,7 +131,7 @@ export const CountrySelectField = <T extends FieldValues>({
 }: CountrySelectProps<T>) => {
   return (
     <div className="space-y-2">
-      <Label htmlFor={name} className="form-label">
+      <Label htmlFor={name} className="text-sm font-medium text-foreground">
         {label}
       </Label>
       <Controller
@@ -142,8 +144,12 @@ export const CountrySelectField = <T extends FieldValues>({
           <CountrySelect value={field.value} onChange={field.onChange} />
         )}
       />
-      {error && <p className="text-sm text-red-500">{error.message}</p>}
-      <p className="text-xs text-gray-500">
+      {error && (
+        <p className="text-sm text-destructive animate-in slide-in-from-top-1">
+          {error.message}
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground">
         Helps us show market data and news relevant to you.
       </p>
     </div>
