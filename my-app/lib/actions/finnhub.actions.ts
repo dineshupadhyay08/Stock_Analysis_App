@@ -27,6 +27,100 @@ async function fetchJSON<T>(
 
 export { fetchJSON };
 
+export async function getQuotes(symbols: string[]): Promise<Record<string, { c: number, d: number, dp: number }>> {
+  const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
+  if (!token) {
+    throw new Error("FINNHUB API key is not configured");
+  }
+
+  const results: Record<string, { c: number, d: number, dp: number }> = {};
+
+  await Promise.all(
+    symbols.map(async (sym) => {
+      try {
+        const url = `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(sym)}&token=${token}`;
+        const data = await fetchJSON<{ c: number, d: number, dp: number }>(url, 300);
+        results[sym] = data;
+      } catch (e) {
+        console.error("Error fetching quote for", sym, e);
+      }
+    })
+  );
+
+  return results;
+}
+
+
+export async function getCompanyProfiles(symbols: string[]): Promise<Record<string, { name: string, logo: string }>> {
+  const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
+  if (!token) {
+    throw new Error("FINNHUB API key is not configured");
+  }
+
+  const results: Record<string, { name: string, logo: string }> = {};
+
+  await Promise.all(
+    symbols.map(async (sym) => {
+      try {
+        const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(sym)}&token=${token}`;
+        const profile = await fetchJSON<any>(url, 3600);
+        results[sym] = {
+          name: profile?.name || sym,
+          logo: profile?.logo || ""
+        };
+      } catch (e) {
+        console.error("Error fetching profile for", sym, e);
+      }
+    })
+  );
+
+  return results;
+}
+
+const failedHistoricalCache = new Set<string>();
+
+export async function getHistoricalData(
+  symbol: string,
+  resolution: string,
+  from: number,
+  to: number
+): Promise<{ c: number[] } | null> {
+  const cacheKey = `${symbol}_${resolution}_${from}_${to}`;
+  if (failedHistoricalCache.has(cacheKey)) {
+    // Previously failed, avoid hammering the endpoint
+    return null;
+  }
+  const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
+  if (!token) {
+    throw new Error("FINNHUB API key is not configured");
+  }
+
+  try {
+    const url = `${FINNHUB_BASE_URL}/stock/candle?symbol=${encodeURIComponent(
+      symbol
+    )}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
+
+    // Log parameters for debugging
+    console.log(`Finnhub Candle Request: sym=${symbol}, res=${resolution}, from=${from}, to=${to}`);
+
+    const data = await fetchJSON<{ s: string; c: number[] }>(url, 300);
+
+    console.log(`Finnhub Candle Response Status: ${data?.s}`);
+    console.log(`Finnhub Candle Data Count: ${data?.c?.length ?? 0}`);
+
+    if (data.s === 'no_data') {
+        return null;
+    }
+
+    return { c: data.c || [] };
+  } catch (e) {
+    console.error("Error fetching historical data for", symbol, e);
+    // Record failure to prevent repeated attempts during this process lifetime
+    failedHistoricalCache.add(cacheKey);
+    return null;
+  }
+}
+
 export async function getNews(
   symbols?: string[],
 ): Promise<MarketNewsArticle[]> {
