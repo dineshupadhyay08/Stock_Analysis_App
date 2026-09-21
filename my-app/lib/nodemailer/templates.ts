@@ -1108,3 +1108,162 @@ export const INACTIVE_USER_REMINDER_EMAIL_TEMPLATE = `<!DOCTYPE html>
     </table>
 </body>
 </html>`;
+
+
+export const PASSWORD_RESET_EMAIL_TEMPLATE = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>Reset Your Signalist Password</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:AllowPNG/>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style type="text/css">
+        @media (prefers-color-scheme: dark) {
+            .email-container {
+                background-color: #141414 !important;
+                border: 1px solid #30333A !important;
+            }
+            .dark-bg {
+                background-color: #050505 !important;
+            }
+            .dark-text {
+                color: #ffffff !important;
+            }
+            .dark-text-secondary {
+                color: #9ca3af !important;
+            }
+            .dark-text-muted {
+                color: #6b7280 !important;
+            }
+            .dark-border {
+                border-color: #30333A !important;
+            }
+            .dark-info-box {
+                background-color: #1f2937 !important;
+                border: 1px solid #374151 !important;
+            }
+        }
+
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                margin: 0 !important;
+            }
+            .mobile-padding {
+                padding: 24px !important;
+            }
+            .mobile-header-padding {
+                padding: 24px 24px 12px 24px !important;
+            }
+            .mobile-text {
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+            }
+            .mobile-title {
+                font-size: 24px !important;
+                line-height: 1.3 !important;
+            }
+            .mobile-code {
+                font-size: 28px !important;
+                letter-spacing: 4px !important;
+            }
+            .mobile-outer-padding {
+                padding: 20px 10px !important;
+            }
+        }
+        @media only screen and (max-width: 480px) {
+            .mobile-title {
+                font-size: 22px !important;
+            }
+            .mobile-padding {
+                padding: 15px !important;
+            }
+            .mobile-header-padding {
+                padding: 15px 15px 8px 15px !important;
+            }
+            .mobile-code {
+                font-size: 24px !important;
+                letter-spacing: 3px !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #050505; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #050505;">
+        <tr>
+            <td align="center" class="mobile-outer-padding" style="padding: 40px 20px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="max-width: 600px; background-color: #141414; border-radius: 8px; border: 1px solid #30333A;">
+
+                    <!-- Header with Logo -->
+                    <tr>
+                        <td align="left" class="mobile-header-padding" style="padding: 40px 40px 20px 40px;">
+                            <img src="https://ik.imagekit.io/a6fkjou7d/logo.png?updatedAt=1756378431634" alt="Signalist Logo" width="150" style="max-width: 100%; height: auto;">
+                        </td>
+                    </tr>
+
+                    <!-- Main Content -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 20px 40px 40px 40px;">
+
+                            <!-- Heading -->
+                            <h1 class="mobile-title dark-text" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #FDD458; line-height: 1.2;">
+                                Password Reset Request
+                            </h1>
+
+                            <!-- Main Message -->
+                            <p class="mobile-text dark-text-secondary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #CCDADC;">
+                                Hello {{name}},<br><br>
+                                We received a request to reset your Signalist account password. Enter the verification code below on the password reset page to set a new password:
+                            </p>
+
+                            <!-- Verification Code Box -->
+                            <div class="dark-bg" style="text-align: center; padding: 24px 20px; background-color: #050505; border-radius: 8px; border: 1px solid #30333A; margin-bottom: 24px;">
+                                <p class="dark-text-muted" style="margin: 0 0 8px 0; font-size: 13px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">
+                                    Verification Code
+                                </p>
+                                <p class="mobile-code" style="margin: 0; font-size: 32px; font-weight: 700; color: #FDD458; letter-spacing: 6px; font-family: 'Courier New', Courier, monospace;">
+                                    {{code}}
+                                </p>
+                            </div>
+
+                            <!-- Expiration & Security Notice -->
+                            <p class="mobile-text dark-text-secondary" style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #CCDADC;">
+                                This code is valid for <strong>{{expiresInMinutes}} minutes</strong>.
+                            </p>
+
+                            <!-- Warning Box -->
+                            <div class="dark-info-box" style="background-color: #1f2937; border-radius: 6px; padding: 16px; margin-bottom: 30px; border: 1px solid #374151;">
+                                <p class="dark-text-muted" style="margin: 0; font-size: 13px; line-height: 1.5; color: #9CA3AF;">
+                                    🔒 <strong>Didn't request this?</strong> If you didn't request a password reset, you can safely ignore this email. Your password will not change and your account remains secure.
+                                </p>
+                            </div>
+
+                            <!-- Footer Text -->
+                            <div style="text-align: center; margin: 30px 0 0 0; border-top: 1px solid #30333A; padding-top: 20px;">
+                                <p style="margin: 0 0 8px 0; font-size: 13px; line-height: 1.5; color: #9CA3AF !important;">
+                                    Signalist — Real-Time Stock Intelligence & Market Tracking
+                                </p>
+                                <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #6B7280 !important;">
+                                    © 2025 Signalist. All rights reserved.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;

@@ -26,7 +26,7 @@ export const sendSignUpEmail = inngest.createFunction(
     id: "sign-up-email",
     triggers: [{ event: "app/user.created" }],
   },
-  async ({ event, step }) => {
+  async ({ event, step }: { event: any; step: any }) => {
     try {
       console.log("🚀 SIGNUP EMAIL FUNCTION TRIGGERED");
       console.log("📩 Event Data:", event.data);
@@ -111,15 +111,14 @@ export const sendSignUpEmail = inngest.createFunction(
 );
 
 export const sendDailyNewsSummary = inngest.createFunction(
-  
   {
     id: "daily-news-summary",
     triggers: [{ event: "app/send.daily.news" }, { cron: "0 12 * * *" }],
   },
-  async ({ step }) => {
+  async ({ step }: { step: any }) => {
     // Step #1: Get all users for news delivery
     const users = await step.run("get-all-users", getAllUsersForNewsEmail);
-    
+
 
     if (!users || users.length === 0)
       return { success: false, message: "No users found for news email" };

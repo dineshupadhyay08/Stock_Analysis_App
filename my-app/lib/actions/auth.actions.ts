@@ -5,7 +5,7 @@ import { inngest } from "@/lib/inngests/client";
 import { headers } from "next/headers";
 
 let __signupInvocationCounter = 0;
-function __maskEmail(e){
+function __maskEmail(e: string){
   return e.replace(/(.{3}).+(.{3}@.+)/, '$1***$2');
 }
 export const signUpWithEmail = async ({

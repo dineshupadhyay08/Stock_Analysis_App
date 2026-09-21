@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import {
   WELCOME_EMAIL_TEMPLATE,
   NEWS_SUMMARY_EMAIL_TEMPLATE,
+  PASSWORD_RESET_EMAIL_TEMPLATE,
 } from "../nodemailer/templates";
 
 
@@ -53,6 +54,34 @@ export const sendNewsSummaryEmail = async ({
     to: email,
     subject: `📈 Market News Summary Today - ${date}`,
     text: `Today's market news summary from Signalist`,
+    html: htmlTemplate,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+
+export const sendPasswordResetEmail = async ({
+  email,
+  name,
+  code,
+  expiresInMinutes = 10,
+}: {
+  email: string;
+  name: string;
+  code: string;
+  expiresInMinutes?: number;
+}): Promise<void> => {
+  const htmlTemplate = PASSWORD_RESET_EMAIL_TEMPLATE
+    .replace("{{name}}", name || "Investor")
+    .replace("{{code}}", code)
+    .replace("{{expiresInMinutes}}", String(expiresInMinutes));
+
+  const mailOptions = {
+    from: `"Signalist Security" <signalist@dinesh.pro>`,
+    to: email,
+    subject: `🔐 Reset Your Signalist Password (Code: ${code})`,
+    text: `Your Signalist password reset verification code is ${code}. It will expire in ${expiresInMinutes} minutes.`,
     html: htmlTemplate,
   };
 
