@@ -13,9 +13,9 @@ export async function GET(request: Request) {
     // Ensure auth instance is initialized (even if not used for DB query)
     await getAuth();
 
-    const { mongoose } = await connectToDatabase();
+    const mongoose = await connectToDatabase();
     // Better Auth uses the collection name "user" (model name is "user")
-    const collection = mongoose.connection.db.collection('user');
+    const collection = mongoose.connection.db!.collection('user');
     const userDoc = await collection.findOne({ email: email.toLowerCase() });
     const exists = !!userDoc;
     const masked = email.replace(/(.{3}).+(.{3}@.+)/, '$1***$2');
