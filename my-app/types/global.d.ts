@@ -67,6 +67,13 @@ declare global {
     intro: string;
   };
 
+  type PasswordResetEmailData = {
+    email: string;
+    name: string;
+    code: string;
+    expiresInMinutes?: number;
+  };
+
   type User = {
     id: string;
     name: string;

@@ -1,0 +1,9 @@
+declare module 'lucide-react';
+declare module 'better-auth';
+declare module 'better-auth/react';
+declare module 'better-auth/adapters/mongodb';
+declare module 'better-auth/next-js';
+declare module 'inngest';
+declare module 'inngest/next';
+declare module 'inngest/client';
+declare module 'better-auth/cookies';
