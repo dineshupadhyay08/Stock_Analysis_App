@@ -12,7 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { User, Settings, Key, LogOut } from "lucide-react";
 import NavItems from "@/components/NavItems";
 import { signOut } from "@/lib/actions/auth.actions";
 
@@ -112,6 +112,19 @@ const UserDropDown = ({
 
         <DropdownMenuSeparator className="bg-gray-600" />
 
+        <DropdownMenuItem onClick={() => router.push("/profile")} className="cursor-pointer">
+          <User className="h-4 w-4 mr-2" />
+          Profile
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push("/settings")} className="cursor-pointer">
+          <Settings className="h-4 w-4 mr-2" />
+          Settings
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push("/auth/change-password")} className="cursor-pointer">
+          <Key className="h-4 w-4 mr-2" />
+          Update Password
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-gray-600" />
         <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
           <LogOut className="h-4 w-4 mr-2" />
           Logout
