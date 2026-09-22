@@ -67,7 +67,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* Market Overview */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {overviewSymbols.map((sym) => (
           <MarketIndexCard
             key={sym}
@@ -79,10 +79,12 @@ export default async function DashboardPage() {
       </section>
 
       {/* Heatmap + Movers */}
-      <section className="grid gap-4 xl:grid-cols-[1.6fr_1fr_1fr]">
+      <section className="grid gap-4 lg:grid-cols-[2fr_1fr_1fr]">
         <DashboardCard title="Stock Heatmap">
           {/* Placeholder for heatmap widget */}
-          <div className="h-[280px] bg-muted/20 rounded-xl" />
+          <div className="h-64 bg-muted/20 rounded-lg flex items-center justify-center text-muted-foreground">
+            Heatmap widget coming soon
+          </div>
         </DashboardCard>
         <DashboardCard title="Top Gainers">
           <MoverList items={topGainers} positive />
@@ -93,30 +95,34 @@ export default async function DashboardPage() {
       </section>
 
       {/* Stories + Watchlist */}
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="grid gap-4 lg:grid-cols-2">
         <DashboardCard title="Top Stories">
           {news && news.length ? (
-            news.map((article) => (
-              <StoryItem key={article.id} title={article.headline} />
-            ))
+            <div className="grid gap-3">
+              {news.map((article) => (
+                <StoryItem key={article.id} title={article.headline} />
+              ))}
+            </div>
           ) : (
-            <p className="text-muted-foreground">No market stories available yet.</p>
+            <p className="text-muted-foreground text-sm">No market stories available yet.</p>
           )}
         </DashboardCard>
         <DashboardCard title="Your Watchlist">
           {watchlistSymbols.length ? (
-            watchlistSymbols.map((sym) => {
-              const q = watchlistQuotes[sym];
-              return (
-                <div key={sym} className="flex justify-between py-1 border-b border-border/40 last:border-0">
-                  <span>{sym}</span>
-                  <span>{q?.c ? `$${q.c.toFixed(2)}` : "-"}</span>
-                  <span className={q?.dp && q.dp >= 0 ? "text-emerald-500" : "text-red-500"}>
-                    {q?.dp ? `${q.dp.toFixed(2)}%` : "-"}
-                  </span>
-                </div>
-              );
-            })
+            <div className="space-y-2">
+              {watchlistSymbols.map((sym) => {
+                const q = watchlistQuotes[sym];
+                return (
+                  <div key={sym} className="flex items-center justify-between gap-3 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors border-b border-border/20 last:border-0">
+                    <span className="font-semibold text-sm">{sym}</span>
+                    <span className="text-sm font-medium">{q?.c ? `$${q.c.toFixed(2)}` : "-"}</span>
+                    <span className={`text-sm font-bold ${q?.dp && q.dp >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+                      {q?.dp ? `${q.dp >= 0 ? "+" : ""}${q.dp.toFixed(2)}%` : "-"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           ) : (
             <EmptyState text="Your watchlist is empty. Search for a stock to start tracking it." />
           )}
@@ -124,7 +130,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* Portfolio + Paper Trading */}
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="grid gap-4 lg:grid-cols-2">
         <DashboardCard title="Portfolio">
           <EmptyState text="Your portfolio is empty. Explore stocks to start investing." />
         </DashboardCard>
@@ -160,11 +166,11 @@ function MarketIndexCard({ title, quote, history }: { title: string; quote?: { c
       return `${x},${y}`;
     });
     return (
-      <svg viewBox="0 0 100 100" className="w-16 h-8">
+      <svg viewBox="0 0 100 100" className="w-20 h-10">
         <polyline
           fill="none"
           stroke={isPositive ? "var(--color-teal-400)" : "var(--color-red-500)"}
-          strokeWidth="4"
+          strokeWidth="2"
           points={points.join(" ")}
         />
       </svg>
@@ -172,13 +178,15 @@ function MarketIndexCard({ title, quote, history }: { title: string; quote?: { c
   })();
 
   return (
-    <div className="rounded-lg border border-border bg-muted/10 p-4 shadow-sm flex items-center justify-between">
-      <div className="flex flex-col">
-        <span className="text-sm font-medium text-muted-foreground">{title}</span>
-        <span className="text-xl font-bold text-foreground">{value}</span>
-        <span className={isPositive ? "text-emerald-500" : "text-red-500"}>{change}</span>
+    <div className="rounded-2xl border border-border/50 bg-muted/10 p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-full">
+      <div className="flex flex-col gap-3">
+        <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{title}</span>
+        <div>
+          <span className="text-2xl font-bold text-foreground">{value}</span>
+          <div className={`text-sm font-semibold mt-1 ${isPositive ? "text-emerald-500" : "text-red-500"}`}>{change}</div>
+        </div>
       </div>
-      {sparkline && <div className="ml-2">{sparkline}</div>}
+      {sparkline && <div className="mt-3 flex justify-end">{sparkline}</div>}
     </div>
   );
 }
@@ -189,8 +197,8 @@ function MarketIndexCard({ title, quote, history }: { title: string; quote?: { c
 /* ------------------------------------------------ */
 function DashboardCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-border bg-muted/10 p-4 shadow-sm hover:shadow-lg transition-shadow">
-      <h2 className="text-xl font-bold text-foreground mb-3">{title}</h2>
+    <div className="rounded-2xl border border-border/50 bg-muted/10 p-6 shadow-sm hover:shadow-md transition-shadow">
+      <h2 className="text-lg font-bold text-foreground mb-4">{title}</h2>
       {children}
     </div>
   );
@@ -202,11 +210,11 @@ function DashboardCard({ title, children }: { title: string; children: React.Rea
 /* ------------------------------------------------ */
 function MoverList({ items, positive }: { items: Array<{ symbol: string; dp: number }>; positive?: boolean }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {items.map(({ symbol, dp }) => (
-        <div key={symbol} className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0">
-          <span className="font-medium">{symbol}</span>
-          <span className={positive ? "text-emerald-500" : "text-red-500"}>
+        <div key={symbol} className="flex items-center justify-between gap-3 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors border-b border-border/20 last:border-0">
+          <span className="font-semibold text-sm">{symbol}</span>
+          <span className={`text-sm font-bold ${positive ? "text-emerald-500" : "text-red-500"}`}>
             {dp >= 0 ? `+${dp.toFixed(2)}%` : `${dp.toFixed(2)}%`}
           </span>
         </div>
@@ -220,9 +228,9 @@ function MoverList({ items, positive }: { items: Array<{ symbol: string; dp: num
 /* ------------------------------------------------ */
 function StoryItem({ title }: { title: string }) {
   return (
-    <div className="rounded-xl border border-border/50 p-4">
-      <p className="text-sm font-medium">{title}</p>
-      <p className="mt-1 text-xs text-muted-foreground">Market Intelligence</p>
+    <div className="rounded-xl border border-border/40 bg-muted/5 p-4 hover:bg-muted/10 transition-colors">
+      <p className="text-sm font-semibold text-foreground line-clamp-2">{title}</p>
+      <p className="mt-2 text-xs text-muted-foreground">Market Intelligence</p>
     </div>
   );
 }
@@ -232,7 +240,7 @@ function StoryItem({ title }: { title: string }) {
 /* ------------------------------------------------ */
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+    <div className="rounded-xl border-2 border-dashed border-border/40 bg-muted/5 p-8 text-center text-sm text-muted-foreground">
       {text}
     </div>
   );
