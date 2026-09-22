@@ -1,11 +1,20 @@
 import Sidebar from "@/components/Sidebar";
 import TopNavbar from "@/components/TopNavbar";
 
-export default function DashboardLayout({
+import { getAuth } from "@/lib/better-auth/auth";
+import { headers } from "next/headers";
+
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Fetch authenticated user session
+  const auth = await getAuth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  const user = session?.user ? { name: session.user.name, email: session.user.email } : undefined;
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="flex min-h-screen">
