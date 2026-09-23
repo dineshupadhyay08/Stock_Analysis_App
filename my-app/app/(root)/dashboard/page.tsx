@@ -2,8 +2,15 @@
 
 import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
-import { getQuotes, getNews, getHistoricalData } from "@/lib/actions/finnhub.actions";
+import Link from "next/link";
+import { getQuotes, getHistoricalData, getCompanyProfiles } from "@/lib/actions/finnhub.actions";
 import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
+import { getMarketStatus, getFormattedTodayDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import StockHeatmap from "@/components/StockHeatmap";
+import { MoverCard } from "@/components/MoverCard";
+import TopStories from "@/components/TopStories";
+import { Star } from "lucide-react";
 
 export default async function DashboardPage() {
   // Authenticated user
@@ -22,8 +29,27 @@ export default async function DashboardPage() {
 
   // Determine top gainers and losers based on percentage change (dp)
   const sorted = Object.entries(allQuotes).sort(([, a], [, b]) => (b.dp ?? 0) - (a.dp ?? 0));
-  const topGainers = sorted.slice(0, 5).map(([sym, data]) => ({ symbol: sym, ...data }));
-  const topLosers = sorted.slice(-5).reverse().map(([sym, data]) => ({ symbol: sym, ...data }));
+  const topGainerSymbols = sorted.slice(0, 10).map(([sym]) => sym);
+  const topLoserSymbols = sorted.slice(-10).reverse().map(([sym]) => sym);
+
+  // Fetch company profiles for logos and names
+  const allSymbolsForProfiles = [...new Set([...topGainerSymbols, ...topLoserSymbols])];
+  const companyProfiles = await getCompanyProfiles(allSymbolsForProfiles);
+
+  // Map data with company info
+  const topGainers = topGainerSymbols.map((sym) => ({
+    symbol: sym,
+    ...(allQuotes[sym] || {}),
+    name: companyProfiles[sym]?.name,
+    logo: companyProfiles[sym]?.logo,
+  }));
+
+  const topLosers = topLoserSymbols.map((sym) => ({
+    symbol: sym,
+    ...(allQuotes[sym] || {}),
+    name: companyProfiles[sym]?.name,
+    logo: companyProfiles[sym]?.logo,
+  }));
 
 // Fetch historical data for sparkline (if available)
   const overviewHistorical: Record<string, number[] | null> = {};
@@ -36,15 +62,12 @@ export default async function DashboardPage() {
         const hist = await getHistoricalData(sym, "5", sixHoursAgo, now);
         overviewHistorical[sym] = hist?.c ?? null;
       } catch (e) {
-        console.error("Historical data error for", sym, e);
+        // Silently handle historical data errors to avoid noisy overlays
         overviewHistorical[sym] = null;
       }
     })
   );
 
-
-  // News (general market news fallback)
-  const news = await getNews();
 
   // User watchlist
   const watchlistSymbols = userEmail ? await getWatchlistSymbolsByEmail(userEmail) : [];
@@ -59,10 +82,19 @@ export default async function DashboardPage() {
           <p className="mt-1 text-muted-foreground">Here's what's happening in the market today.</p>
         </div>
         <div className="text-right">
-          <p className="text-sm text-muted-foreground">Market Status</p>
-          <div className="mt-1 flex items-center justify-end gap-2 text-sm font-medium text-emerald-500">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" /> Market Open
-          </div>
+          {(() => {
+            const status = getMarketStatus();
+            return (
+              <div className="flex flex-col items-end gap-1">
+                <div className="text-sm text-muted-foreground">
+                  {getFormattedTodayDate()}
+                </div>
+                <div className={`flex items-center justify-end gap-2 text-sm font-medium ${status.color}`}>
+                  <span className={`h-2 w-2 rounded-full ${status.dotColor}`} /> {status.status}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </section>
 
@@ -79,54 +111,70 @@ export default async function DashboardPage() {
       </section>
 
       {/* Heatmap + Movers */}
-      <section className="grid gap-4 lg:grid-cols-[2fr_1fr_1fr]">
-        <DashboardCard title="Stock Heatmap">
-          {/* Placeholder for heatmap widget */}
-          <div className="h-64 bg-muted/20 rounded-lg flex items-center justify-center text-muted-foreground">
-            Heatmap widget coming soon
-          </div>
+      <section className="grid gap-4 grid-cols-1 lg:grid-cols-4">
+        <DashboardCard title="Stock Heatmap" className="lg:col-span-2 h-full">
+          <StockHeatmap />
         </DashboardCard>
-        <DashboardCard title="Top Gainers">
-          <MoverList items={topGainers} positive />
-        </DashboardCard>
-        <DashboardCard title="Top Losers">
-          <MoverList items={topLosers} />
-        </DashboardCard>
+        <MoverCard items={topGainers} positive title="Top Gainers" />
+        <MoverCard items={topLosers} title="Top Losers" />
       </section>
 
       {/* Stories + Watchlist */}
       <section className="grid gap-4 lg:grid-cols-2">
         <DashboardCard title="Top Stories">
-          {news && news.length ? (
-            <div className="grid gap-3">
-              {news.map((article) => (
-                <StoryItem key={article.id} title={article.headline} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-sm">No market stories available yet.</p>
-          )}
+          <TopStories />
         </DashboardCard>
-        <DashboardCard title="Your Watchlist">
+        <div className="rounded-2xl border border-border/50 bg-muted/10 p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-foreground">Your Watchlist</h2>
+            <Link
+              href="/watchlist"
+              className="text-sm font-medium text-blue-500 hover:text-blue-400 transition-colors"
+            >
+              View All
+            </Link>
+          </div>
           {watchlistSymbols.length ? (
-            <div className="space-y-2">
-              {watchlistSymbols.map((sym) => {
-                const q = watchlistQuotes[sym];
-                return (
-                  <div key={sym} className="flex items-center justify-between gap-3 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors border-b border-border/20 last:border-0">
-                    <span className="font-semibold text-sm">{sym}</span>
-                    <span className="text-sm font-medium">{q?.c ? `$${q.c.toFixed(2)}` : "-"}</span>
-                    <span className={`text-sm font-bold ${q?.dp && q.dp >= 0 ? "text-emerald-500" : "text-red-500"}`}>
-                      {q?.dp ? `${q.dp >= 0 ? "+" : ""}${q.dp.toFixed(2)}%` : "-"}
-                    </span>
-                  </div>
-                );
-              })}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <th className="pb-3 pl-2">Symbol</th>
+                    <th className="pb-3 text-right">Price</th>
+                    <th className="pb-3 text-right">Change</th>
+                    <th className="pb-3 text-right pr-2">%</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/20">
+                  {watchlistSymbols.slice(0, 5).map((sym) => {
+                    const q = watchlistQuotes[sym];
+                    return (
+                      <tr key={sym} className="group hover:bg-muted/30 transition-colors">
+                        <td className="py-2 pl-2">
+                          <div className="flex items-center gap-2">
+                            <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                            <span className="font-bold text-sm text-foreground">{sym}</span>
+                          </div>
+                        </td>
+                        <td className="py-2 text-right text-sm font-medium text-foreground">
+                          {q?.c ? `$${q.c.toFixed(2)}` : "-"}
+                        </td>
+                        <td className={`py-2 text-right text-sm font-medium ${q?.d && q.d >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+                          {q?.d ? `${q.d >= 0 ? "+" : ""}${q.d.toFixed(2)}` : "-"}
+                        </td>
+                        <td className={`py-2 text-right pr-2 text-sm font-bold ${q?.dp && q.dp >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+                          {q?.dp ? `${q.dp >= 0 ? "+" : ""}${q.dp.toFixed(2)}%` : "-"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           ) : (
-            <EmptyState text="Your watchlist is empty. Search for a stock to start tracking it." />
+            <EmptyState text="No stocks in your watchlist. Add stocks to start tracking them." />
           )}
-        </DashboardCard>
+        </div>
       </section>
 
       {/* Portfolio + Paper Trading */}
@@ -195,45 +243,15 @@ function MarketIndexCard({ title, quote, history }: { title: string; quote?: { c
 /* ------------------------------------------------ */
 /* Dashboard Card (wrapper) */
 /* ------------------------------------------------ */
-function DashboardCard({ title, children }: { title: string; children: React.ReactNode }) {
+function DashboardCard({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className="rounded-2xl border border-border/50 bg-muted/10 p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className={cn("rounded-2xl border border-border/50 bg-muted/10 p-6 shadow-sm hover:shadow-md transition-shadow", className)}>
       <h2 className="text-lg font-bold text-foreground mb-4">{title}</h2>
       {children}
     </div>
   );
 }
 
-
-/* ------------------------------------------------ */
-/* Movers list */
-/* ------------------------------------------------ */
-function MoverList({ items, positive }: { items: Array<{ symbol: string; dp: number }>; positive?: boolean }) {
-  return (
-    <div className="space-y-2">
-      {items.map(({ symbol, dp }) => (
-        <div key={symbol} className="flex items-center justify-between gap-3 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors border-b border-border/20 last:border-0">
-          <span className="font-semibold text-sm">{symbol}</span>
-          <span className={`text-sm font-bold ${positive ? "text-emerald-500" : "text-red-500"}`}>
-            {dp >= 0 ? `+${dp.toFixed(2)}%` : `${dp.toFixed(2)}%`}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ------------------------------------------------ */
-/* Story item */
-/* ------------------------------------------------ */
-function StoryItem({ title }: { title: string }) {
-  return (
-    <div className="rounded-xl border border-border/40 bg-muted/5 p-4 hover:bg-muted/10 transition-colors">
-      <p className="text-sm font-semibold text-foreground line-clamp-2">{title}</p>
-      <p className="mt-2 text-xs text-muted-foreground">Market Intelligence</p>
-    </div>
-  );
-}
 
 /* ------------------------------------------------ */
 /* Empty state component */
