@@ -113,6 +113,7 @@ declare global {
     symbol: string;
     company: string;
     isInWatchlist: boolean;
+    userEmail?: string;
     showTrashIcon?: boolean;
     type?: "button" | "icon";
     onWatchlistChange?: (symbol: string, isAdded: boolean) => void;
@@ -222,6 +223,33 @@ declare global {
     threshold: number;
     changePercent?: number;
   };
+
+  type StockDetailData = {
+    symbol: string;
+    companyName: string;
+    logo: string;
+    exchange: string;
+    currency: string;
+    price: number | null;
+    change: number | null;
+    changePercent: number | null;
+    previousClose: number | null;
+    marketCap: number | null;
+    peRatio: number | null;
+    epsBasic: number | null;
+    dividendYield: number | null;
+    week52High: number | null;
+    week52Low: number | null;
+    beta: number | null;
+    industryName: string | null;
+    sector: string | null;
+    country: string | null;
+    website: string | null;
+    ipoDate: string | null;
+    finnhubIndustry: string | null;
+  };
+
+  type ComprehensiveFinancialData = Awaited<ReturnType<typeof import("@/lib/actions/comprehensive-financials.actions").getComprehensiveFinancials>>;
 }
 
 export {};
