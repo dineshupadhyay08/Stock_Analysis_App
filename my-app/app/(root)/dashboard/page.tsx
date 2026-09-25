@@ -7,9 +7,9 @@ import { getQuotes, getHistoricalData, getCompanyProfiles } from "@/lib/actions/
 import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
 import { getMarketStatus, getFormattedTodayDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import StockHeatmap from "@/components/StockHeatmap";
-import { MoverCard } from "@/components/MoverCard";
-import TopStories from "@/components/TopStories";
+import StockHeatmap from "@/components/dashboard/StockHeatmap";
+import { MoverCard } from "@/components/dashboard/MoverCard";
+import TopStories from "@/components/dashboard/TopStories";
 import { Star } from "lucide-react";
 
 export default async function DashboardPage() {
