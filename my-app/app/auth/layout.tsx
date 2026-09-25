@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 const Layout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth!.api.getSession({ headers: await headers() });
 
-  if (session?.user) redirect("/");
+  if (session?.user) redirect("/dashboard");
 
   return (
     <main className="min-h-screen flex flex-col lg:flex-row bg-background relative overflow-hidden">
