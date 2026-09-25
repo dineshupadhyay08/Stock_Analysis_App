@@ -9,5 +9,3 @@ export const inngest = new Inngest({
     },
   },
 });
-console.log("ALL ENV:", process.env.INNGEST_EVENT_KEY);
-console.log("GEMINI:", process.env.GEMINI_API_KEY);

@@ -28,9 +28,6 @@ export const sendSignUpEmail = inngest.createFunction(
   },
   async ({ event, step }: { event: any; step: any }) => {
     try {
-      console.log("🚀 SIGNUP EMAIL FUNCTION TRIGGERED");
-      console.log("📩 Event Data:", event.data);
-
       const userProfile = `
         - Country: ${event.data.country}
         - Investment goals: ${event.data.investmentGoals}
@@ -42,8 +39,6 @@ export const sendSignUpEmail = inngest.createFunction(
         "{{userProfile}}",
         userProfile,
       );
-
-      console.log("🤖 Calling Gemini AI...");
 
       const response = await step.ai.infer("generate-welcome-intro", {
         model: step.ai.models.gemini({
@@ -59,8 +54,6 @@ export const sendSignUpEmail = inngest.createFunction(
         },
       });
 
-      console.log("✅ Gemini Response Received");
-
       await step.run("send-welcome-email", async () => {
         try {
           const part = response.candidates?.[0]?.content?.parts?.[0];
@@ -73,17 +66,11 @@ export const sendSignUpEmail = inngest.createFunction(
             data: { email, name },
           } = event;
 
-          console.log("📧 Sending Welcome Email To:", email);
-          console.log("👤 User Name:", name);
-
           const result = await sendWelcomeEmail({
             email,
             name,
             intro: introText,
           });
-
-          console.log("✅ EMAIL SENT SUCCESSFULLY");
-          console.log("📨 Result:", result);
 
           return result;
         } catch (emailError) {
@@ -91,8 +78,6 @@ export const sendSignUpEmail = inngest.createFunction(
           throw emailError;
         }
       });
-
-      console.log("🎉 SIGNUP EMAIL WORKFLOW COMPLETED");
 
       return {
         success: true,
