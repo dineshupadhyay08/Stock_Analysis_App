@@ -104,12 +104,11 @@ export async function getHistoricalData(
     )}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
 
     // Log parameters for debugging
-    console.log(`Finnhub Candle Request: sym=${symbol}, res=${resolution}, from=${from}, to=${to}`);
+    // Removed debug logs
 
     const data = await fetchJSON<{ s: string; c: number[] }>(url, 300);
 
-    console.log(`Finnhub Candle Response Status: ${data?.s}`);
-    console.log(`Finnhub Candle Data Count: ${data?.c?.length ?? 0}`);
+    // Removed debug logs
 
     if (data.s === 'no_data') {
         return null;
