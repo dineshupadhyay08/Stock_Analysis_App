@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import WatchlistButton from "./WatchlistButton";
 import { getMarketStatus, getFormattedTodayDate } from "@/lib/utils";
