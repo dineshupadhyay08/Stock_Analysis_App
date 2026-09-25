@@ -10,21 +10,23 @@ const useTradingViewWidget = (
 
   useEffect(() => {
     if (!containerRef.current) return;
-    if (containerRef.current.dataset.loaded) return;
+
+    // Clear previous widget every time effect runs
+    // This allows theme/config changes to recreate the widget
     containerRef.current.innerHTML = `<div class="tradingview-widget-container__widget" style="width: 100%; height: ${height}px;"></div>`;
 
+    // Create script element for TradingView
     const script = document.createElement("script");
     script.src = scriptUrl;
     script.async = true;
-    script.innerHTML = JSON.stringify(config);
+    script.type = "text/javascript";
+    script.textContent = JSON.stringify(config);
 
     containerRef.current.appendChild(script);
-    containerRef.current.dataset.loaded = "true";
 
     return () => {
       if (containerRef.current) {
         containerRef.current.innerHTML = "";
-        delete containerRef.current.dataset.loaded;
       }
     };
   }, [scriptUrl, config, height]);
