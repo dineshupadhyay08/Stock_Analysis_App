@@ -7,10 +7,15 @@ import { getQuotes, getHistoricalData, getCompanyProfiles } from "@/lib/actions/
 import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
 import { getMarketStatus, getFormattedTodayDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { Suspense } from "react";
 import StockHeatmap from "@/components/dashboard/StockHeatmap";
 import { MoverCard } from "@/components/dashboard/MoverCard";
 import TopStories from "@/components/dashboard/TopStories";
 import { Star } from "lucide-react";
+
+function getCurrentTimestamp(): number {
+  return Math.floor(Date.now() / 1000);
+}
 
 export default async function DashboardPage() {
   // Authenticated user
@@ -19,13 +24,14 @@ export default async function DashboardPage() {
   const userName = session?.user?.name ?? "User";
   const userEmail = session?.user?.email ?? "";
 
-  // Market overview symbols (ETFs representing indices)
+  // Combined unique symbol list for a single getQuotes call
   const overviewSymbols = ["SPY", "QQQ", "DIA", "IWM"]; // S&P 500, Nasdaq, Dow Jones, Russell 2000
-  const overviewQuotes = await getQuotes(overviewSymbols);
-
-  // Gather a broader set of symbols to compute gainers/losers
-  const allSymbols = [...overviewSymbols, "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "TSLA", "META", "ORCL", "JPM", "V", "WMT", "AMD"];
-  const allQuotes = await getQuotes(allSymbols);
+  const extraSymbols = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "TSLA", "META", "ORCL", "JPM", "V", "WMT", "AMD"];
+  const watchlistSymbols = userEmail ? await getWatchlistSymbolsByEmail(userEmail) : [];
+  const allDashboardSymbols = Array.from(new Set([...overviewSymbols, ...extraSymbols, ...watchlistSymbols]));
+  const quotes = await getQuotes(allDashboardSymbols);
+  const overviewQuotes = quotes; // reuse for overview
+  const allQuotes = quotes; // reuse for gainers/losers
 
   // Determine top gainers and losers based on percentage change (dp)
   const sorted = Object.entries(allQuotes).sort(([, a], [, b]) => (b.dp ?? 0) - (a.dp ?? 0));
@@ -53,11 +59,11 @@ export default async function DashboardPage() {
 
 // Fetch historical data for sparkline (if available)
   const overviewHistorical: Record<string, number[] | null> = {};
+  const now = getCurrentTimestamp(); // Fixed: compute once outside render
   await Promise.all(
     overviewSymbols.map(async (sym) => {
       try {
         // fetch last 6 hours of 5‑minute candles
-        const now = Math.floor(Date.now() / 1000);
         const sixHoursAgo = now - 6 * 60 * 60;
         const hist = await getHistoricalData(sym, "5", sixHoursAgo, now);
         overviewHistorical[sym] = hist?.c ?? null;
@@ -69,9 +75,11 @@ export default async function DashboardPage() {
   );
 
 
-  // User watchlist
-  const watchlistSymbols = userEmail ? await getWatchlistSymbolsByEmail(userEmail) : [];
-  const watchlistQuotes = watchlistSymbols.length ? await getQuotes(watchlistSymbols) : {};
+  // Watchlist quotes are now included in the single consolidated getQuotes call above
+  const watchlistQuotes = watchlistSymbols.reduce((acc, sym) => {
+    if (quotes[sym]) acc[sym] = quotes[sym];
+    return acc;
+  }, {} as Record<string, { c: number, d: number, dp: number }>);
 
   return (
     <div className="space-y-6">
@@ -113,17 +121,33 @@ export default async function DashboardPage() {
       {/* Heatmap + Movers */}
       <section className="grid gap-4 grid-cols-1 lg:grid-cols-4">
         <DashboardCard title="Stock Heatmap" className="lg:col-span-2 h-full">
-          <StockHeatmap />
+          <Suspense fallback={<div className="h-64 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>}>
+            <StockHeatmap />
+          </Suspense>
         </DashboardCard>
-        <MoverCard items={topGainers} positive title="Top Gainers" />
-        <MoverCard items={topLosers} title="Top Losers" />
+        <Suspense fallback={<div className="h-64 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>}>
+          <MoverCard items={topGainers} positive title="Top Gainers" />
+        </Suspense>
+        <Suspense fallback={<div className="h-64 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>}>
+          <MoverCard items={topLosers} title="Top Losers" />
+        </Suspense>
       </section>
 
       {/* Stories + Watchlist */}
       <section className="grid gap-4 lg:grid-cols-2">
-        <DashboardCard title="Top Stories">
-          <TopStories />
-        </DashboardCard>
+        <Suspense fallback={<div className="h-64 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>}>
+          <DashboardCard title="Top Stories">
+            <TopStories />
+          </DashboardCard>
+        </Suspense>
         <div className="rounded-2xl border border-border/50 bg-muted/10 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-foreground">Your Watchlist</h2>
